@@ -3,6 +3,7 @@ package lru
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/dollarkillerx/gocache/list"
 )
@@ -14,6 +15,7 @@ type LRU struct {
 
 	list  *list.List
 	cache map[string]interface{}
+	mu sync.Mutex
 }
 
 func New(maxTotal int64) *LRU {
@@ -31,10 +33,20 @@ func New(maxTotal int64) *LRU {
 }
 
 func (l *LRU) Len() int {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	return l.list.Len()
+}
+
+func (l *LRU) lenSync() int {
 	return l.list.Len()
 }
 
 func (l *LRU) Get(key string) (val interface{}, err error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if ele, ok := l.cache[key]; ok {
 		// 更新LRU队列
 		l.list.MoveToFront(key)
@@ -44,6 +56,9 @@ func (l *LRU) Get(key string) (val interface{}, err error) {
 }
 
 func (l *LRU) Set(key string, value interface{}) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if _, ok := l.cache[key]; ok {
 		// 更新LRU队列
 		l.list.MoveToFront(key)
@@ -69,7 +84,10 @@ func (l *LRU) Set(key string, value interface{}) {
 }
 
 func (l *LRU) Del(key string) {
-	if l.Len() == 0 {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if l.lenSync() == 0 {
 		return
 	}
 

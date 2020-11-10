@@ -13,6 +13,7 @@ func New() *List {
 }
 
 func (l *List) Len() int {
+
 	return len(l.list)
 }
 
