@@ -28,7 +28,47 @@ func TestCrc32(t *testing.T) {
 func TestA(t *testing.T) {
 	ser := "src"
 	for i := 0; i < 100; i++ {
+		fmt.Println()
 		ieee := crc32.ChecksumIEEE([]byte(fmt.Sprintf("%s_%d", ser, i)))
-		log.Println(ieee)
+		log.Println("CRC32: ", ieee)
+
+		hash := SimpleHash(fmt.Sprintf("%s_%d", ser, i))
+		log.Println("SimpleHash: ", hash)
+	}
+}
+
+func TestHashC(t *testing.T) {
+	dm := New(100, nil)
+	dm.AddNodes("s1", "s2", "s3", "s4", "s5", "s6", "s7", "s9")
+	addr, err := dm.GetNodeAddr("spsps")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(addr)
+
+	for i := 0; i < 999; i++ {
+		addr, err := dm.GetNodeAddr(fmt.Sprintf("spsps:%d", i))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println(addr)
+	}
+}
+
+func TestHashC2(t *testing.T) {
+	dm := New(1000, SimpleHash)
+	dm.AddNodes("s1", "s2", "s3", "s4", "s5", "s6", "s7", "s9")
+	addr, err := dm.GetNodeAddr("spsps")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(addr)
+
+	for i := 0; i < 999; i++ {
+		addr, err := dm.GetNodeAddr(fmt.Sprintf("spsps:%d", i))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println(addr)
 	}
 }
